@@ -247,7 +247,7 @@ class Toy(nn.Module):
         self.backbone3 = backbone[6]
         self.MMCA3 = MMCA_module(1024, reduction=[8, 8], level=2)
         self.backbone4 = backbone[7]
-        self.MMCA4 = MMCA_module(2048, reduction=[8, 16], level=3)
+        self.MMCA4 = MMCA_module(2048, reduction=[8, 16], level=2)
 
         self.MSA = Multi_Sacle_Fusion()
 
@@ -319,11 +319,11 @@ class Toy(nn.Module):
         # feature_for_attention1 = torch.cat([fusion_feature1, fusion_res1], dim=1)
         feature_for_reg1 = torch.cat([torch.squeeze(F.adaptive_avg_pool2d(fusion_feature1, 1)), gender_encode], dim=1)
         # feature_for_attention2 = torch.cat([fusion_feature2, fusion_res2], dim=1)
-        feature_for_reg2 = torch.cat([torch.squeeze(F.adaptive_avg_pool2d(self.MMCA2(fusion_feature2), 1)), gender_encode], dim=1)
+        feature_for_reg2 = torch.cat([torch.squeeze(F.adaptive_avg_pool2d(fusion_feature2, 1)), gender_encode], dim=1)
         # feature_for_attention3 = torch.cat([fusion_feature3, fusion_res3], dim=1)
-        feature_for_reg3 = torch.cat([torch.squeeze(F.adaptive_avg_pool2d(self.MMCA3(fusion_feature3), 1)), gender_encode], dim=1)
+        feature_for_reg3 = torch.cat([torch.squeeze(F.adaptive_avg_pool2d(fusion_feature3, 1)), gender_encode], dim=1)
         # feature_for_attention4 = torch.cat([fusion_feature4, fusion_res4], dim=1)
-        feature_for_reg4 = torch.cat([torch.squeeze(F.adaptive_avg_pool2d(self.MMCA4(fusion_feature4), 1)), gender_encode], dim=1)
+        feature_for_reg4 = torch.cat([torch.squeeze(F.adaptive_avg_pool2d(fusion_feature4, 1)), gender_encode], dim=1)
 
         return self.MLP1(feature_for_reg1), self.MLP2(feature_for_reg2), self.MLP3(feature_for_reg3), self.MLP4(feature_for_reg4)
         
