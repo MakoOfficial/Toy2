@@ -95,8 +95,13 @@ def read_image(file_path, image_size=512):
     padding = (delta_w // 2, delta_h // 2, delta_w - (delta_w // 2), delta_h - (delta_h // 2))
     return np.array(ImageOps.expand(img, padding).convert("RGB"))
 
-def split_data(data_dir, csv_name, category_num, split_ratio):
+def split_data(data_dir, csv_name, category_num, split_ratio, save_path="./Toy"):
     """restruct the dataset"""
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+        print(f"文件夹 '{save_path}' 已创建")
+    else:
+        print(f"文件夹 '{save_path}' 已存在")
     age_df = pd.read_csv(os.path.join(data_dir, csv_name))
     age_df['path'] = age_df['id'].map(lambda x: os.path.join(data_dir,
                                                             csv_name.split('.')[0],
@@ -124,21 +129,13 @@ def split_data(data_dir, csv_name, category_num, split_ratio):
     stratify=age_df['boneage_category']
     )
     print('train', raw_train_df.shape[0], 'validation', valid_df.shape[0])
-    male_train_df = raw_train_df[raw_train_df["gender"] == "male"]
-    female_train_df = raw_train_df[raw_train_df["gender"] == "female"]
-    male_valid_df = valid_df[valid_df["gender"] == "male"]
-    female_valid_df = valid_df[valid_df["gender"] == "female"]
     # train_df = raw_train_df.groupby(['boneage_category']).apply(lambda x: x.sample(aug_num, replace=True)).reset_index(drop=True)
     # train_df = raw_train_df.groupby(['boneage_category']).apply(lambda x: x)
-    print('male Data Size:', male_train_df.shape[0], 'Old Size:', raw_train_df.shape[0])
-    print('female Data Size:', female_train_df.shape[0], 'Old Size:', raw_train_df.shape[0])
-    # raw_train_df.to_csv("train.csv")
-    male_train_df.to_csv("male_train.csv")
-    female_train_df.to_csv("female_train.csv")
-    male_valid_df.to_csv("male_valid.csv")
-    female_valid_df.to_csv("female_valid.csv")
-    # return train_df, valid_df
-    return male_train_df, male_valid_df, female_train_df, female_valid_df
+    raw_train_df.to_csv(os.path.join(save_path, "train.csv"))
+    valid_df.to_csv(os.path.join(save_path, "valid.csv"))
+    return raw_train_df, valid_df
+
+    # return male_train_df, male_valid_df, female_train_df, female_valid_df
 
 def soften_labels(l, x):
     "soften the label distribution"
@@ -400,23 +397,5 @@ if __name__ == '__main__':
     male_train_df, male_valid_df, female_train_df, female_valid_df = split_data(bone_dir, csv_name, 20, 0.1)
     train_set, val_set = create_data_loader(male_train_df, male_valid_df)
     torch.set_default_tensor_type('torch.FloatTensor')
-    
-    idx = range(20)
-    sub_train, sub_valid = torch.utils.data.Subset(train_set, idx), torch.utils.data.Subset(val_set, idx)
-    train_loader = torch.utils.data.DataLoader(
-        sub_train,
-        batch_size=4,
-        shuffle=True,
-        drop_last=True)
-    valid_loader = torch.utils.data.DataLoader(
-        sub_valid,
-        batch_size=4,
-        shuffle=True,
-        drop_last=True)
-    
-    for idx, data in enumerate(train_loader):
-        image, gender = data[0]
-        image, gender = image.type(torch.FloatTensor), gender.type(torch.FloatTensor)
-        net.Prototype_Initialization(image)
-    train_fn(net=net, train_dataset=sub_train, valid_dataset=sub_valid, num_epochs=num_epochs, lr=lr, wd=weight_decay, lr_period=lr_period,
+    train_fn(net=net, train_dataset=train_set, valid_dataset=val_set, num_epochs=num_epochs, lr=lr, wd=weight_decay, lr_period=lr_period,
              lr_decay=lr_decay, batch_size=20)
