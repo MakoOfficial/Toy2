@@ -139,7 +139,7 @@ def split_data(data_dir, csv_name, category_num, split_ratio, save_path="./Toy")
 
 def soften_labels(l, x):
     "soften the label distribution"
-    a = torch.arange(0,228)
+    a = torch.arange(0,240)
     a = 1 - torch.abs(a - x)/l
     relu = nn.ReLU()
     a = relu(a)
@@ -147,7 +147,7 @@ def soften_labels(l, x):
 
 def one_hot(x):
     """"encode the label to one-hot label"""
-    label = torch.zeros(228)
+    label = torch.zeros(240)
     label[int(x)] = 1
 
     return label
@@ -206,11 +206,11 @@ def try_gpu(i=0):
 
 
 def train_fn(net, train_dataset, valid_dataset, num_epochs, lr, wd, lr_period, lr_decay,  
-             batch_size=32, model_path="./model.pth", record_path="./RECORD.csv"):
+             batch_size=32, model_path="./model.pth", record_path="./RECORD.csv", save_path="./Toy"):
     """start training the net"""
     # record outputs of every epoch
     record = [['epoch', 'training loss', 'val loss', 'lr']]
-    with open(record_path, 'w', newline='') as csvfile:
+    with open(os.path.join(save_path, record_path), 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
         for row in record:
             writer.writerow(row)
@@ -315,7 +315,7 @@ def train_fn(net, train_dataset, valid_dataset, num_epochs, lr, wd, lr_period, l
 
         ## Evaluation
         # Sets net to eval and no grad context
-        val_total_size, mae_loss = valid_fn(net=net, val_loader=val_loader, devices=device)
+        val_total_size, mae_loss = valid_fn(net=net, val_loader=val_loader, device=device)
         # accuracy_num = accuracy(pred_list[1:, :], grand_age[1:])
         
         train_loss, val_mae = training_loss / total_size, mae_loss / val_total_size
@@ -323,7 +323,7 @@ def train_fn(net, train_dataset, valid_dataset, num_epochs, lr, wd, lr_period, l
         print(
             f'training loss is {round(train_loss.item(), 2)}, val loss is {round(val_mae.item(), 2)}, time : {round((time.time() - start_time), 2)}, lr:{optimizer.param_groups[0]["lr"]}')
         scheduler.step()
-        with open(record_path, 'a+', newline='') as csvfile:
+        with open(os.path.join(save_path, record_path), 'a+', newline='') as csvfile:
             writer = csv.writer(csvfile)
             for row in this_record:
                 writer.writerow(row)
@@ -349,7 +349,7 @@ def valid_fn(*, net, val_loader, device):
             # label = data[1].type(torch.FloatTensor).to(devices[0])
             label = data[1].type(torch.FloatTensor).to(device)
 
-            y1, y2, y3, y3 = net(image, gender)
+            y1, y2, y3, y4 = net(image, gender)
             y1 = y1.argmax(dim=1).cpu()
             y2 = y2.argmax(dim=1).cpu()
             y3 = y3.argmax(dim=1).cpu()
@@ -398,4 +398,4 @@ if __name__ == '__main__':
     train_set, val_set = create_data_loader(male_train_df, male_valid_df)
     torch.set_default_tensor_type('torch.FloatTensor')
     train_fn(net=net, train_dataset=train_set, valid_dataset=val_set, num_epochs=num_epochs, lr=lr, wd=weight_decay, lr_period=lr_period,
-             lr_decay=lr_decay, batch_size=20)
+             lr_decay=lr_decay, batch_size=20, save_path="Toy")

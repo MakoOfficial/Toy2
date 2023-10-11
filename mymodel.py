@@ -254,18 +254,18 @@ class Toy(nn.Module):
         self.gender_encoder = nn.Linear(1, genderSize)
         self.gender_BN = nn.BatchNorm1d(genderSize)
         self.MLP1 = nn.Sequential(
-            nn.Linear(256 + genderSize, 228),
+            nn.Linear(256 + genderSize, 240),
             nn.Softmax()
         )
         self.MLP2 = nn.Sequential(
-            nn.Linear(512 + genderSize, 228),
+            nn.Linear(512 + genderSize, 240),
             nn.Softmax()
         )
         self.MLP3 = nn.Sequential(
             nn.Linear(1024 + genderSize, 512),
             nn.BatchNorm1d(512),
             nn.ReLU(),
-            nn.Linear(512, 228),
+            nn.Linear(512, 240),
             nn.Softmax()
         )
         self.MLP4 = nn.Sequential(
@@ -275,7 +275,7 @@ class Toy(nn.Module):
             nn.Linear(1024, 512),
             nn.BatchNorm1d(512),
             nn.ReLU(),
-            nn.Linear(512, 228),
+            nn.Linear(512, 240),
             nn.Softmax()
         )
 
