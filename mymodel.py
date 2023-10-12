@@ -22,7 +22,6 @@ class My_attention(nn.Module):
     def forward(self, x):
         return self.my_attention(x)
 
-
 class MMCA_module(nn.Module):
     """构建MMCA模块，MMCA包括DR和MRA，DR需要降维因子reduction[]，还有DR的层数level，故需要参数：输入通道，降维因子reduction，层数level
         注：MMCA并不改编通道数"""
@@ -65,81 +64,6 @@ class DW_conv(nn.Module):
         out = self.depthwise(x)
         out = self.pointwise(out)
         return out
-
-
-# class KMEANS:
-#     def __init__(self, n_clusters=20, max_iter=None, verbose=True, device = torch.device("cpu")):
-#         """the implement of K-Meas"""
-#         self.n_cluster = n_clusters
-#         self.n_clusters = n_clusters
-#         self.labels = None
-#         self.dists = None  # shape: [x.shape[0],n_cluster]
-#         self.centers = None
-#         self.variation = torch.Tensor([float("Inf")]).to(device)
-#         self.verbose = verbose
-#         self.started = False
-#         self.representative_samples = None
-#         self.max_iter = max_iter
-#         self.count = 0
-#         self.device = device
-
-#     def fit(self, x):
-#         print("K-Means start!!!")
-#         # 随机选择初始中心点，想更快的收敛速度可以借鉴sklearn中的kmeans++初始化方法
-#         bacth_size = x.shape[0]
-#         self.count = 0
-#         x = torch.reshape(x, [bacth_size, -1])
-#         if self.centers is None:
-#             init_row = torch.randint(0, bacth_size, (self.n_clusters,)).to(self.device)
-#             init_points = x[init_row]
-#             self.centers = init_points
-#         while True:
-#             # 聚类标记
-#             self.nearest_center(x)
-#             # 更新中心点
-#             self.update_center(x)
-#             if self.verbose:
-#                 print(self.variation, torch.argmin(self.dists, dim=0))
-#             if torch.abs(self.variation) < 1e-3 and self.max_iter is None:
-#                 break
-#             elif self.max_iter is not None and self.count == self.max_iter:
-#                 break
-
-#             self.count += 1
-#         print("K-Means is over!!!")
-#         self.representative_sample()
-
-#     def nearest_center(self, x):
-#         labels = torch.empty((x.shape[0],)).long().to(self.device)
-#         dists = torch.empty((0, self.n_clusters)).to(self.device)
-#         for i, sample in enumerate(x):
-#             # print(f"centers is {self.centers}")
-#             dist = torch.sum(torch.mul(sample - self.centers, sample - self.centers), dim=1)
-#             labels[i] = torch.argmin(dist)
-#             dists = torch.cat([dists, dist.unsqueeze(0)], dim=0)
-#         self.labels = labels
-#         if self.started:
-#             self.variation = torch.sum(self.dists - dists)
-#         self.dists = dists
-#         self.started = True
-
-#     def update_center(self, x):
-#         centers = torch.empty((0, x.shape[1])).to(self.device)
-#         for i in range(self.n_clusters):
-#             mask = self.labels == i
-#             cluster_samples = x[mask]
-#             if min(cluster_samples.shape) != 0:
-#                 centers = torch.cat([centers, torch.mean(cluster_samples, dim=0).unsqueeze(0)], dim=0)
-#             else:
-#                 centers = torch.cat([centers, self.centers[i].unsqueeze(0)], dim=0)
-#         self.centers = centers
-
-#     def representative_sample(self):
-#         # 查找距离中心点最近的样本，作为聚类的代表样本，更加直观
-#         self.representative_samples = torch.argmin(self.dists, (0))
-
-#     def fine_tune(self):
-#         self.centers = self.centers.to(torch.device("cuda"))
 
 class Multi_Sacle_Fusion(nn.Module):
     def __init__(self) -> None:
