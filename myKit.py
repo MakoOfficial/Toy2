@@ -301,7 +301,7 @@ def train_fn(net, train_dataset, valid_dataset, num_epochs, lr, wd, lr_period, l
          
             loss.backward()
 
-            print(f"\nloss_1:{loss1.detach().item()/batch_size}, loss_2'grad {loss2.detach().item()/batch_size}, loss_3'grad :{loss3.detach().item()/batch_size}, loss_4'grad :{loss4.detach().item()/batch_size}")
+            # print(f"\nloss_1:{loss1.detach().item()/batch_size}, loss_2'grad {loss2.detach().item()/batch_size}, loss_3'grad :{loss3.detach().item()/batch_size}, loss_4'grad :{loss4.detach().item()/batch_size}")
             # print(f"\nloss_BN:{loss_BN.detach().item()/batch_size}, loss_dis'grad {loss_dis.detach().item()/(4*batch_size)}")
             
             # backward,update parameter
@@ -319,7 +319,7 @@ def train_fn(net, train_dataset, valid_dataset, num_epochs, lr, wd, lr_period, l
         # accuracy_num = accuracy(pred_list[1:, :], grand_age[1:])
         
         train_loss, val_mae = training_loss / total_size, mae_loss / val_total_size
-        this_record.append([epoch, round(train_loss.item(), 2), round(val_mae.item(), 2), optimizer.param_groups[0]["lr"]])
+        this_record.append([epoch+1, round(train_loss.item(), 2), round(val_mae.item(), 2), optimizer.param_groups[0]["lr"]])
         print(
             f'training loss is {round(train_loss.item(), 2)}, val loss is {round(val_mae.item(), 2)}, time : {round((time.time() - start_time), 2)}, lr:{optimizer.param_groups[0]["lr"]}')
         scheduler.step()
@@ -327,7 +327,7 @@ def train_fn(net, train_dataset, valid_dataset, num_epochs, lr, wd, lr_period, l
             writer = csv.writer(csvfile)
             for row in this_record:
                 writer.writerow(row)
-    torch.save(net, model_path)
+    torch.save(net, os.path.join(save_path, model_path))
 
 
 def valid_fn(*, net, val_loader, device):
